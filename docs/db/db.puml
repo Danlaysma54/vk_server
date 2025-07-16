@@ -1,0 +1,23 @@
+@startuml name
+entity "user" as user {
+id: UUID PK
+--
+username: text NOT NULL
+password: varchar (255) NOT NULL
+created_at: timestamp
+updated_at: timestamp
+}
+entity "ad" as ad {
+id: UUID PK
+--
+name: text
+description: text
+image_address: text
+price: int
+author_id: UUID FK
+created_at: timestamp
+updated_at: timestamp
+
+}
+user ||--o{ ad
+@enduml

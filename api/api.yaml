@@ -1,0 +1,282 @@
+openapi: 3.0.0
+info:
+  title: Advertisement Board API
+  version: 1.0.0
+  description: API для размещения и просмотра объявлений
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local server
+
+paths:
+  # Аутентификация
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        201:
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          description: Неверные данные
+        409:
+          description: Пользователь уже существует
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход в систему
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        200:
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        401:
+          description: Неверные учетные данные
+
+  # Объявления
+  /advertisements:
+    post:
+      tags: [Advertisements]
+      summary: Создать объявление
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvertisementCreateRequest'
+      responses:
+        201:
+          description: Объявление создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementResponse'
+        400:
+          description: Неверные данные
+        401:
+          description: Не авторизован
+
+    get:
+      tags: [Advertisements]
+      summary: Получить ленту объявлений
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/sortBy'
+        - $ref: '#/components/parameters/sortOrder'
+        - $ref: '#/components/parameters/minPrice'
+        - $ref: '#/components/parameters/maxPrice'
+      responses:
+        200:
+          description: Список объявлений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvertisementFeedItem'
+        400:
+          description: Неверные параметры запроса
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    page:
+      name: page
+      in: query
+      description: Номер страницы
+      required: false
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    limit:
+      name: limit
+      in: query
+      description: Количество элементов на странице
+      required: false
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+    sortBy:
+      name: sort_by
+      in: query
+      description: Поле для сортировки (created_at или price)
+      required: false
+      schema:
+        type: string
+        enum: [created_at, price]
+        default: created_at
+    sortOrder:
+      name: sort_order
+      in: query
+      description: Направление сортировки (asc или desc)
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+    minPrice:
+      name: min_price
+      in: query
+      description: Минимальная цена
+      required: false
+      schema:
+        type: number
+        minimum: 0
+    maxPrice:
+      name: max_price
+      in: query
+      description: Максимальная цена
+      required: false
+      schema:
+        type: number
+        minimum: 0
+
+  schemas:
+    # Auth
+    UserRegisterRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: "user123"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+          example: "securePassword123"
+
+    UserLoginRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          example: "user123"
+        password:
+          type: string
+          example: "securePassword123"
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        login:
+          type: string
+          example: "user123"
+
+    # Advertisements
+    AdvertisementCreateRequest:
+      type: object
+      required: [title, text, image_url, price]
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 100
+          example: "Продам велосипед"
+        text:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          example: "Отличный горный велосипед, почти не использовался"
+        image_url:
+          type: string
+          format: uri
+          maxLength: 500
+          example: "https://example.com/bike.jpg"
+        price:
+          type: number
+          minimum: 0
+          maximum: 1000000
+          example: 15000
+
+    AdvertisementResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Продам велосипед"
+        text:
+          type: string
+          example: "Отличный горный велосипед..."
+        image_url:
+          type: string
+          example: "https://example.com/bike.jpg"
+        price:
+          type: number
+          example: 15000
+        author_id:
+          type: integer
+          example: 1
+
+    AdvertisementFeedItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Продам велосипед"
+        text:
+          type: string
+          example: "Отличный горный велосипед..."
+        image_url:
+          type: string
+          example: "https://example.com/bike.jpg"
+        price:
+          type: number
+          example: 15000
+        author_login:
+          type: string
+          example: "user123"
+        is_owner:
+          type: boolean
+          nullable: true
+          description: Присутствует только для авторизованных пользователей
+          example: true
