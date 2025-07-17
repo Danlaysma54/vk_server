@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS ad(
  id UUID NOT NULL PRIMARY KEY  DEFAULT gen_random_uuid(),
  ad_name TEXT NOT NULL,
  description TEXT,
+ image_url TEXT,
  price INTEGER NOT NULL,
  author_id UUID REFERENCES users(id) ON DELETE CASCADE,
  created_at TIMESTAMP WITH TIME ZONE NOT NULL  DEFAULT NOW(),
