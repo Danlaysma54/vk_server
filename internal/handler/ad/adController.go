@@ -8,10 +8,25 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"vk_server/internal/repository"
 )
 
+const DEFAULT_ORDER = "DESC"
+const DEFAULT_LIMIT = 20
+const DEFAULT_OFFSET = 0
+const DEFAULT_MIN_PRICE = 1
+const DEFAULT_MAX_PRICE = 10000000
+
+type QueryParams struct {
+	DateSort  string `form:"date_sort"`
+	PriceSort string `form:"price_sort"`
+	MinPrice  int    `form:"min_price"`
+	MaxPrice  int    `form:"max_price"`
+	Limit     int    `form:"limit"`
+	Offset    int    `form:"offset"`
+}
 type Request struct {
 	AdName      string `json:"adName" validate:"required,min=2,max=100"`
 	Description string `json:"description" validate:"max=1000"`
@@ -65,6 +80,26 @@ func (r *Request) ValidateImage() error {
 	}
 	return nil
 }
+func sanitizeSortOrder(s, defaultValue string) string {
+	if s == "" {
+		return defaultValue
+	}
+	s = strings.ToUpper(s)
+	if s != "ASC" && s != "DESC" {
+		return defaultValue
+	}
+	return s
+}
+func parseInt(s string, defaultValue int) int {
+	if s == "" {
+		return defaultValue
+	}
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
+	}
+	return val
+}
 func NewControllerAd(repo repository.IRepoAd) *ControllerAd {
 	return &ControllerAd{repo: repo}
 }
@@ -89,6 +124,7 @@ func (s *ControllerAd) New() http.HandlerFunc {
 		}
 		adId := s.repo.SaveAd(req.AdName, req.Description, req.ImageUrl, req.Price, req.AuthorId)
 		adEnt := s.repo.GetAd(adId)
+		w.WriteHeader(http.StatusCreated)
 		render.JSON(w, r, Response{
 			AdID:        adEnt.AdId,
 			AdName:      adEnt.Name,
@@ -97,6 +133,25 @@ func (s *ControllerAd) New() http.HandlerFunc {
 			Price:       adEnt.Price,
 			AuthorId:    adEnt.AuthorId,
 		})
+		return
+	}
+}
+
+func (s *ControllerAd) GetAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+
+		params := &QueryParams{
+			DateSort:  sanitizeSortOrder(q.Get("date_sort"), DEFAULT_ORDER),
+			PriceSort: sanitizeSortOrder(q.Get("date_sort"), DEFAULT_ORDER),
+			MinPrice:  parseInt(q.Get("min_price"), DEFAULT_MIN_PRICE),
+			MaxPrice:  parseInt(q.Get("max_price"), DEFAULT_MAX_PRICE),
+			Limit:     parseInt(q.Get("limit"), DEFAULT_LIMIT),
+			Offset:    parseInt(q.Get("offset"), DEFAULT_OFFSET),
+		}
+
+		res := s.repo.GetAllAds(params.DateSort, params.PriceSort, params.MinPrice, params.MaxPrice, params.Limit, params.Offset)
+		render.JSON(w, r, res)
 		return
 	}
 }

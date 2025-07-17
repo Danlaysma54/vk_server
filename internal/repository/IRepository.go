@@ -13,4 +13,11 @@ type IRepoAd interface {
 		price int,
 		authorId string) uuid.UUID
 	GetAd(adId uuid.UUID) *model.AdEntity
+	GetAllAds(
+		DateSort string,
+		PriceSort string,
+		MinPrice int,
+		MaxPrice int,
+		Limit int,
+		Offset int) []*model.AdEntity
 }

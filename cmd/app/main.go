@@ -24,6 +24,7 @@ func main() {
 	controllerAd := *ad2.NewControllerAd(adRepo)
 	mux := chi.NewRouter()
 	mux.Post("/addAd", controllerAd.New())
+	mux.Get("/getAll", controllerAd.GetAll())
 	srv := &http.Server{
 		Addr:         "localhost:8080",
 		Handler:      mux,
