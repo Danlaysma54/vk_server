@@ -2,9 +2,9 @@ package ad
 
 import (
 	"github.com/go-chi/render"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"vk_server/internal/repository"
 )
 
 type Request struct {
@@ -20,16 +20,15 @@ type Response struct {
 	Price       int    `json:"price"`
 	AuthorId    string `json:"authorId"`
 }
-type AdSaver interface {
-	SaveAd(
-		adName string,
-		description string,
-		price int,
-		authorId string)
-	uuid.UUID
+type ControllerAd struct {
+	repo repository.IRepoAd
 }
 
-func New(adSaver AdSaver) http.HandlerFunc {
+func NewControllerAd(repo repository.IRepoAd) *ControllerAd {
+	return &ControllerAd{repo: repo}
+}
+
+func (s *ControllerAd) New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.ad.adController.New"
 		var req Request
@@ -37,7 +36,7 @@ func New(adSaver AdSaver) http.HandlerFunc {
 		if err != nil {
 			log.Fatal("error decoding body", err)
 		}
-		adSaver.SaveAd(req.AdName, req.Description, req.Price, req.AuthorId)
+		s.repo.SaveAd(req.AdName, req.Description, req.Price, req.AuthorId)
 		render.JSON(w, r, Response{
 			AdID:        "bruh",
 			AdName:      req.AdName,

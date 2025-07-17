@@ -1,27 +1,27 @@
 package ad
 
 import (
+	"database/sql"
 	"github.com/google/uuid"
 	"log"
-	"vk_server/configs"
 )
 
-type AddStorage struct {
-	*configs.Storage
+type RepoAd struct {
+	db *sql.DB
 }
 
-func NewAddStorage(storage *configs.Storage) *AddStorage {
-	return &AddStorage{
-		storage,
+func NewRepoAd(db *sql.DB) *RepoAd {
+	return &RepoAd{
+		db: db,
 	}
 }
-func (s *AddStorage) SaveAd(
+func (s *RepoAd) SaveAd(
 	adName string,
 	description string,
 	price int,
 	authorId string) uuid.UUID {
 	var res uuid.UUID
-	stmt, err2 := s.Storage.Db.Prepare(
+	stmt, err2 := s.db.Prepare(
 		"INSERT INTO ad(ad_name,description,price,author_id) VALUES ($1,$2,$3,$4) returning id")
 	if err2 != nil {
 		panic(err2)

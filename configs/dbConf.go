@@ -9,10 +9,6 @@ import (
 	"log"
 )
 
-type Storage struct {
-	Db *sql.DB
-}
-
 func runMigrations(dbSourceURL string, dbURL string) {
 	m, err := migrate.New(dbSourceURL, dbURL)
 	if err != nil {
@@ -24,7 +20,7 @@ func runMigrations(dbSourceURL string, dbURL string) {
 	log.Println("Migrations applied successfully")
 }
 
-func NewStorage() (*Storage, error) {
+func NewStorage() (*sql.DB, error) {
 	LoadEnv()
 	runMigrations(getSourceURL(), getDbURL())
 	const op = "NewStorage"
@@ -33,9 +29,5 @@ func NewStorage() (*Storage, error) {
 		return nil, fmt.Errorf("%s - %s", op, err)
 	}
 
-	return &Storage{Db: db}, nil
-}
-
-func CloseDB(storage *Storage) {
-	storage.Db.Close()
+	return db, nil
 }
