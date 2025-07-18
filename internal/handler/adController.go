@@ -1,4 +1,4 @@
-package ad
+package handler
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"vk_server/internal/repository"
+	"vk_server/internal/repository/ad"
 )
 
 const DEFAULT_ORDER = "DESC"
@@ -46,7 +46,7 @@ type errResponse struct {
 	Message string `json:"message"`
 }
 type ControllerAd struct {
-	repo repository.IRepoAd
+	repo ad.IRepoAd
 }
 
 var validate = validator.New()
@@ -100,7 +100,7 @@ func parseInt(s string, defaultValue int) int {
 	}
 	return val
 }
-func NewControllerAd(repo repository.IRepoAd) *ControllerAd {
+func NewControllerAd(repo ad.IRepoAd) *ControllerAd {
 	return &ControllerAd{repo: repo}
 }
 

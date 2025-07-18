@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 	"vk_server/configs"
-	ad2 "vk_server/internal/handler/ad"
+	ad2 "vk_server/internal/handler"
 	"vk_server/internal/repository/ad"
 )
 
