@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
@@ -10,8 +11,11 @@ import (
 	"syscall"
 	"time"
 	"vk_server/configs"
+	"vk_server/internal/handler"
 	ad2 "vk_server/internal/handler"
+	"vk_server/internal/middleware"
 	"vk_server/internal/repository/ad"
+	"vk_server/internal/repository/user"
 )
 
 func main() {
@@ -21,10 +25,39 @@ func main() {
 		os.Exit(1)
 	}
 	adRepo := ad.NewRepoAd(storage)
+	userRepo := user.NewUserRepo(storage)
 	controllerAd := *ad2.NewControllerAd(adRepo)
+
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(gin.Logger())
+
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+	authHandler := handler.NewAuthHandler(userRepo, []byte(configs.JwtConfig().Secret))
+
 	mux := chi.NewRouter()
-	mux.Post("/addAd", controllerAd.New())
-	mux.Get("/getAll", controllerAd.GetAll())
+
+	mux.Group(func(r chi.Router) {
+		r.Get("/getAll", controllerAd.GetAll())
+		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
+
+	})
+	mux.Group(func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware)
+		r.Post("/addAd", controllerAd.New())
+
+	})
 	srv := &http.Server{
 		Addr:         "localhost:8080",
 		Handler:      mux,

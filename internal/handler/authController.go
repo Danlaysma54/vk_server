@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/go-chi/render"
+	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"time"
 	"vk_server/internal/model"
@@ -31,7 +32,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, err)
 		return
 	}
-	if h.repo.GetUser(user.Username) {
+	if h.repo.IsExist(user.Username) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -47,11 +48,28 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var user model.UserRequest
-	if err := render.DecodeJSON(r.Body, &user); err != nil {
+	var userReq model.UserRequest
+	if err := render.DecodeJSON(r.Body, &userReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		render.JSON(w, r, err)
 		return
 	}
-	h.repo.GetUser(user.Username)
+	user := h.repo.GetUserByUsername(userReq.Username)
+	if !utils.CheckPasswordHash(userReq.Password, user.Password) {
+		w.WriteHeader(http.StatusUnauthorized)
+		render.JSON(w, r, "Wrong password")
+	}
+	claims := jwt.MapClaims{
+		"username": user.Username,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(h.tokenExpireDuration).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(h.jwtSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, err)
+		return
+	}
+	render.JSON(w, r, tokenString)
 }

@@ -21,3 +21,7 @@ func getSourceURL() string {
 func getConnString() string {
 	return os.Getenv("CONN_STRING")
 }
+
+func getJWT_SECRET() string {
+	return os.Getenv("JWT_SECRET")
+}

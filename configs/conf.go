@@ -7,7 +7,13 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"log"
+	"time"
 )
+
+type JWT struct {
+	Secret      string
+	TokenExpiry time.Duration
+}
 
 func runMigrations(dbSourceURL string, dbURL string) {
 	m, err := migrate.New(dbSourceURL, dbURL)
@@ -30,4 +36,10 @@ func NewStorage() (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+func JwtConfig() JWT {
+	j := JWT{}
+	j.Secret = getJWT_SECRET()
+	j.TokenExpiry = time.Hour * 24
+	return j
 }
