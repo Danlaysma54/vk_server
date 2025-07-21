@@ -60,6 +60,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, "Wrong password")
 	}
 	claims := jwt.MapClaims{
+		"id":       user.ID,
 		"username": user.Username,
 		"iat":      time.Now().Unix(),
 		"exp":      time.Now().Add(h.tokenExpireDuration).Unix(),

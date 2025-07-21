@@ -48,14 +48,17 @@ func main() {
 	mux := chi.NewRouter()
 
 	mux.Group(func(r chi.Router) {
-		r.Get("/getAll", controllerAd.GetAll())
 		r.Post("/register", authHandler.Register)
 		r.Post("/login", authHandler.Login)
 
 	})
 	mux.Group(func(r chi.Router) {
+		r.Use(middleware.OptionalAuthMiddleware)
+		r.Get("/getAll", controllerAd.GetAll())
+	})
+	mux.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
-		r.Post("/addAd", controllerAd.New())
+		r.Post("/addAd", controllerAd.AddAd())
 
 	})
 	srv := &http.Server{

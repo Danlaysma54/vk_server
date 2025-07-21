@@ -6,5 +6,14 @@ type AdEntity struct {
 	Description string
 	ImageUrl    string
 	Price       int
-	AuthorId    string
+	Username    string
+}
+type AdEntityForAuth struct {
+	AdId        string
+	Name        string
+	Description string
+	ImageUrl    string
+	Price       int
+	Username    string
+	Mine        bool
 }

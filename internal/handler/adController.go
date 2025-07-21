@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"vk_server/internal/model"
 	"vk_server/internal/repository/ad"
 )
 
@@ -32,7 +33,6 @@ type Request struct {
 	Description string `json:"description" validate:"max=1000"`
 	ImageUrl    string `json:"imageUrl"`
 	Price       int    `json:"price" validate:"required,min=1,max=10000000"`
-	AuthorId    string `json:"authorId" validate:"required"`
 }
 type Response struct {
 	AdID        string `json:"adId"`
@@ -40,7 +40,7 @@ type Response struct {
 	Description string `json:"description"`
 	ImageUrl    string `json:"imageUrl"`
 	Price       int    `json:"price"`
-	AuthorId    string `json:"authorId"`
+	Username    string `json:"username"`
 }
 type errResponse struct {
 	Message string `json:"message"`
@@ -104,9 +104,8 @@ func NewControllerAd(repo ad.IRepoAd) *ControllerAd {
 	return &ControllerAd{repo: repo}
 }
 
-func (s *ControllerAd) New() http.HandlerFunc {
+func (s *ControllerAd) AddAd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.ad.adController.New"
 		var req Request
 		err := render.DecodeJSON(r.Body, &req)
 		if err := req.Validate(); err != nil {
@@ -122,7 +121,8 @@ func (s *ControllerAd) New() http.HandlerFunc {
 		if err != nil {
 			log.Fatal("error decoding body", err)
 		}
-		adId := s.repo.SaveAd(req.AdName, req.Description, req.ImageUrl, req.Price, req.AuthorId)
+		authorID := r.Context().Value("user").(*model.User).ID
+		adId := s.repo.SaveAd(req.AdName, req.Description, req.ImageUrl, req.Price, authorID)
 		adEnt := s.repo.GetAd(adId)
 		w.WriteHeader(http.StatusCreated)
 		render.JSON(w, r, Response{
@@ -131,7 +131,7 @@ func (s *ControllerAd) New() http.HandlerFunc {
 			Description: adEnt.Description,
 			ImageUrl:    adEnt.ImageUrl,
 			Price:       adEnt.Price,
-			AuthorId:    adEnt.AuthorId,
+			Username:    adEnt.Username,
 		})
 		return
 	}
@@ -149,9 +149,13 @@ func (s *ControllerAd) GetAll() http.HandlerFunc {
 			Limit:     parseInt(q.Get("limit"), DEFAULT_LIMIT),
 			Offset:    parseInt(q.Get("offset"), DEFAULT_OFFSET),
 		}
-
-		res := s.repo.GetAllAds(params.DateSort, params.PriceSort, params.MinPrice, params.MaxPrice, params.Limit, params.Offset)
-		render.JSON(w, r, res)
+		if user, ok := r.Context().Value("user").(*model.User); ok {
+			res := s.repo.GetAllAdsForAuth(params.DateSort, params.PriceSort, params.MinPrice, params.MaxPrice, params.Limit, params.Offset, user.ID)
+			render.JSON(w, r, res)
+		} else {
+			res := s.repo.GetAllAds(params.DateSort, params.PriceSort, params.MinPrice, params.MaxPrice, params.Limit, params.Offset)
+			render.JSON(w, r, res)
+		}
 		return
 	}
 }

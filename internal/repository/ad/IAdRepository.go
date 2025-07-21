@@ -20,4 +20,12 @@ type IRepoAd interface {
 		MaxPrice int,
 		Limit int,
 		Offset int) []*model.AdEntity
+	GetAllAdsForAuth(
+		DateSort string,
+		PriceSort string,
+		MinPrice int,
+		MaxPrice int,
+		Limit int,
+		Offset int,
+		AuthorId string) []*model.AdEntityForAuth
 }
