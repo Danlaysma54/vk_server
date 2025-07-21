@@ -1,0 +1,42 @@
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vk_postgres
+    env_file:
+      - ".env"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DB_URL=${DB_URL}
+    ports:
+      - "5432:5432"
+    volumes:
+      - hardboard-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+  app:
+    image: 'vk_server-app'
+    container_name: vk_server
+    build:
+      context: .
+    env_file:
+      - ".env"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DB_URL=${DB_URL}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+volumes:
+  hardboard-data:
+
+networks:
+  app-network:

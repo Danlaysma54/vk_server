@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/go-chi/render"
 	"github.com/golang-jwt/jwt/v5"
+	"log"
 	"net/http"
 	"time"
 	"vk_server/internal/model"
@@ -26,6 +27,7 @@ func NewAuthHandler(repo user.IRepoUser, jwtSecret []byte) *AuthHandler {
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var user model.UserRequest
+	log.Println("hello")
 	err := render.DecodeJSON(r.Body, &user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
