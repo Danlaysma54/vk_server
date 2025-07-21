@@ -143,7 +143,7 @@ func (s *ControllerAd) GetAll() http.HandlerFunc {
 
 		params := &QueryParams{
 			DateSort:  sanitizeSortOrder(q.Get("date_sort"), DEFAULT_ORDER),
-			PriceSort: sanitizeSortOrder(q.Get("date_sort"), DEFAULT_ORDER),
+			PriceSort: sanitizeSortOrder(q.Get("price_sort"), DEFAULT_ORDER),
 			MinPrice:  parseInt(q.Get("min_price"), DEFAULT_MIN_PRICE),
 			MaxPrice:  parseInt(q.Get("max_price"), DEFAULT_MAX_PRICE),
 			Limit:     parseInt(q.Get("limit"), DEFAULT_LIMIT),
