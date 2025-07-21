@@ -76,8 +76,8 @@ DB_PASSWORD=durov
 
 - `limit` — количество объявлений на страницу
 - `offset` — смещение (для пагинации)
-- `date_sort` — сортировка по дате (`asc` / `desc`)
-- `price_sort` — сортировка по цене (`asc` / `desc`)
+- `date_sort` — сортировка по дате (`ASC` / `DESC`)
+- `price_sort` — сортировка по цене (`ASC` / `DESC`)
 - `min_price` — минимальная цена
 - `max_price` — максимальная цена
 
