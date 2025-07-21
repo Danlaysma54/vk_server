@@ -34,6 +34,13 @@ DB_PASSWORD=durov
 }
 ```
 
+**Response Body:**
+```json
+{
+"message": "User created"
+}
+```
+
 Регистрирует нового пользователя.
 
 ---
@@ -46,6 +53,13 @@ DB_PASSWORD=durov
 {
   "username": "hu123",
   "password": "1234567890"
+}
+```
+
+**Response Body:**
+```json
+{
+  "token": "Example of token"
 }
 ```
 
@@ -65,6 +79,17 @@ DB_PASSWORD=durov
   "imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg"
 }
 ```
+**Response Body:**
+```json
+{
+  "adId": "7a3f74ba-ef2c-4549-9cf4-934e56a26e63",
+  "adName": "Дора",
+  "description": "",
+  "imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+  "price": 10500,
+  "username": "hu123"
+}
+```
 
 Добавляет новое объявление.
 
@@ -81,4 +106,70 @@ DB_PASSWORD=durov
 - `min_price` — минимальная цена
 - `max_price` — максимальная цена
 
+**Response Body without bearer token:**
+```json
+[
+{
+"adId": "7a3f74ba-ef2c-4549-9cf4-934e56a26e63",
+"name": "Дора",
+"description": "",
+"imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+"price": 10500,
+"username": "hu123"
+},
+{
+"adId": "929c9416-1534-4403-84a7-ab7adc4cfbab",
+"name": "Дора",
+"description": "",
+"imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+"price": 10500,
+"username": "hu123"
+},
+{
+"adId": "217cb890-d290-4870-8512-ae34e1c89469",
+"name": "Дора",
+"description": "",
+"imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+"price": 10500,
+"username": "hu123"
+}
+]
+```
+**Response Body with bearer token:**
+```json
+[
+    {
+        "adId": "7a3f74ba-ef2c-4549-9cf4-934e56a26e63",
+        "name": "Дора",
+        "description": "",
+        "imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+        "price": 10500,
+        "username": "hu123",
+        "mine": true
+    },
+    {
+        "adId": "929c9416-1534-4403-84a7-ab7adc4cfbab",
+        "name": "Дора",
+        "description": "",
+        "imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+        "price": 10500,
+        "username": "hu123",
+        "mine": true
+    },
+    {
+        "adId": "217cb890-d290-4870-8512-ae34e1c89469",
+        "name": "Дора",
+        "description": "",
+        "imageUrl": "https://images.pexels.com/photos/9218709/pexels-photo-9218709.jpeg",
+        "price": 10500,
+        "username": "hu123",
+        "mine": true
+    }
+]
+ 
+```
 Возвращает список объявлений по заданным фильтрам.
+
+Для запроса на добавление объявления нужен bearer token
+
+Для запроса на получение ленты объявлений bearer token не обязателен
