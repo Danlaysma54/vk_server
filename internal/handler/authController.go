@@ -16,6 +16,9 @@ type AuthHandler struct {
 	jwtSecret           []byte
 	tokenExpireDuration time.Duration
 }
+type TokenResponse struct {
+	Token string `json:"token"`
+}
 
 func NewAuthHandler(repo user.IRepoUser, jwtSecret []byte) *AuthHandler {
 	return &AuthHandler{
@@ -31,21 +34,26 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, err)
+		render.JSON(w, r, map[string]interface{}{
+			"message": err})
 		return
 	}
 	if h.repo.IsExist(user.Username) {
 		w.WriteHeader(http.StatusConflict)
+		render.JSON(w, r, map[string]interface{}{
+			"message": "User already exists"})
 		return
 	}
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, err)
+		render.JSON(w, r, map[string]interface{}{
+			"message": err})
 	}
 	h.repo.InsertUser(user.Username, hashedPassword)
 	w.WriteHeader(http.StatusCreated)
-	render.JSON(w, r, "User created")
+	render.JSON(w, r, map[string]interface{}{
+		"message": "User created"})
 	return
 
 }
@@ -53,7 +61,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var userReq model.UserRequest
 	if err := render.DecodeJSON(r.Body, &userReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, err)
+		render.JSON(w, r, map[string]interface{}{
+			"message": err})
 		return
 	}
 	user := h.repo.GetUserByUsername(userReq.Username)
@@ -71,8 +80,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := token.SignedString(h.jwtSecret)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, err)
+		render.JSON(w, r, map[string]interface{}{
+			"message": err})
 		return
 	}
-	render.JSON(w, r, tokenString)
+	render.JSON(w, r, TokenResponse{Token: tokenString})
 }
